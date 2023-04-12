@@ -1,5 +1,6 @@
 package veinminer.objects;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import necesse.engine.GlobalData;
 import necesse.engine.save.LoadData;
@@ -24,7 +25,8 @@ public class Config {
         "copperoreswamp", 
         "goldoreswamp", 
         "ivyoreswamp",
-        "ironoredeeprock", 
+        "myceliumoredeepswamp",
+        "ironoredeeprock",
         "copperoredeeprock",
         "goldoredeeprock", 
         "tungstenoredeeprock", 
@@ -40,38 +42,55 @@ public class Config {
         "goldoredeepsandstonerock", 
         "ancientfossiloredeepsnowrock", 
         "lifequartzdeepsandstonerock",
-        "clayrock"
+        "clayrock",
+        "obsidianrock",
+        "coalorerock",
+        "coaloredeeprock",
+        "coaloresnow",
+        "coaloreswamp",
+        "coaloresandstone",
+        "coaloredeepsnowrock",
+        "coaloredeepsandstone"
     };
     int radius = 10;
-    Character miningKey = null;
-    final String defaultMiningKey = "z";
+    int miningKey = -1;
+    final Character defaultMiningKey = 'z';
     private static final Config OBJ = new Config();
 
     Config() {
         File file = new File(GlobalData.cfgPath() + "anotherveinminer.cfg");
         if (!file.exists()) {
-            SaveData saveFile = new SaveData("CONFIG");
-            saveFile.addStringArray("ores", this.ores);
-            saveFile.addInt("radius", this.radius);
-            saveFile.addSafeString("mining_key", this.defaultMiningKey);
-            saveFile.saveScript(file);
+            this.save(file, KeyEvent.getExtendedKeyCodeForChar(this.defaultMiningKey));
             return;
         }
     
         LoadData save = new LoadData(file);
         this.ores = save.getStringArray("ores", this.ores, false);
         this.radius = save.getInt("radius", this.radius);
-        String key = save.getSafeString("mining_key", null);
-        if (key != null)
-            this.miningKey = key.charAt(0); 
+        this.miningKey = save.getInt("mining_key", -1);
+        
+    }
+
+    void save(File file, int miningKey) {
+        SaveData saveFile = new SaveData("CONFIG");
+        saveFile.addStringArray("ores", this.ores);
+        saveFile.addInt("radius", this.radius);
+        saveFile.addInt("mining_key", miningKey);
+        saveFile.saveScript(file);
     }
     
     public static Config getInstance() {
         return OBJ;
     }
 
-    public static Character getMiningKey() {
+    public static int getMiningKey() {
         return Config.getInstance().miningKey;
+    }
+
+    public static void setMiningKey(int c) {
+        Config.getInstance().miningKey = c;
+        File file = new File(GlobalData.cfgPath() + "anotherveinminer.cfg");
+        Config.getInstance().save(file, c);
     }
 
     public static int getRadius() {

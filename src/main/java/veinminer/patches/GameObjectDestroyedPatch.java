@@ -5,6 +5,7 @@ import necesse.engine.network.server.ServerClient;
 import necesse.level.gameObject.GameObject;
 import necesse.level.maps.Level;
 import net.bytebuddy.asm.Advice;
+import veinminer.objects.Config;
 import veinminer.objects.Coordinate;
 import veinminer.AnotherVeinMiner;
 import veinminer.packets.PacketObjectsDestroyed;
@@ -30,7 +31,7 @@ public class GameObjectDestroyedPatch {
         if (visited.contains(current)) 
             return result;
             
-        if (gameObject.isOre || gameObject.isRock)
+        if(gameObject.isSolid)
             result.add(current);
 
         visited.add(current);
@@ -48,9 +49,10 @@ public class GameObjectDestroyedPatch {
 
     @Advice.OnMethodExit
     static void onExit(@Advice.This GameObject gameObject, @Advice.Argument(0) Level level, @Advice.Argument(1) int x, @Advice.Argument(2) int y, @Advice.Argument(3) ServerClient client) {
-        if (!level.isClientLevel() || (AnotherVeinMiner.SPEED_MINE != null && !AnotherVeinMiner.SPEED_MINE.isDown()))
+        if (!level.isClientLevel())
             return;
 
-        level.getClient().network.sendPacket(new PacketObjectsDestroyed(DFSNodeGathering(level, new Coordinate(x, y, gameObject.getID()), 0, AnotherVeinMiner.RADIUS, new HashSet<Coordinate>())));
+        if (Config.getMiningKey() == -1 || AnotherVeinMiner.SPEED_MINE.isDown())
+            level.getClient().network.sendPacket(new PacketObjectsDestroyed(DFSNodeGathering(level, new Coordinate(x, y, gameObject.getID()), 0, Config.getRadius(), new HashSet<Coordinate>())));
     }
 }
